@@ -1,4 +1,4 @@
-#INCLUDE P16F628A.INC				; diretiva do compilador
+#INCLUDE P16F628A.INC								; diretiva do compilador
 
 __config _XT_OSC & _WDT_OFF & _PWRTE_ON & _CP_OFF
 
@@ -27,28 +27,29 @@ FLAG				EQU 69H							; Flag a ser ativada caso o numero n
 		ORG			000H							; definindo a origem
 		GOTO		INICIO
 
-; ------ Main -------
+; ------- Main -------
 INICIO:	
 		MOVLW		.8				 				; W = 8
 		MOVWF		NUMERO							; NUMERO = 8
 		MOVLW		.6								; w = 6
 		MOVWF		QTD_NUM_BLOQ					; QTD_NUM_BLOQ = 6
 		MOVLW		28H								; W = 28H
-		MOVWF		NUM_BLOQ_ATUAL				; NUM_BLOQ_ATUAL = 28H
+		MOVWF		NUM_BLOQ_ATUAL					; NUM_BLOQ_ATUAL = 28H
 
 RANGE_NUM_BLOQ:	
 		; Define o range dos numeros telefonicos bloqueados
-		MOVFW		NUM_BLOQ_ATUAL 				; W = Contas = 28h
+		MOVFW		NUM_BLOQ_ATUAL 					; W = Contas = 28h
 		MOVWF		FSR								; FSR = Conta3 = 28h
 		MOVLW		.8								; W = 8
 		ADDWF		FSR, F 							; W = W (8) + 28H = 30
 		CALL 		PERCORRE_NUMERO								;  
 
-		DECFSZ 		QTD_NUM_BLOQ, F				; QTD_NUM_BLOQ = QTD_NUM_BLOQ - 1 
+		DECFSZ 		QTD_NUM_BLOQ, F					; QTD_NUM_BLOQ = QTD_NUM_BLOQ - 1 
 		GOTO 		RANGE_NUM_BLOQ
 		GOTO 		FIM
 			
 PERCORRE_NUMERO:
+		; percorrer todas as posicoes do numero
 		MOVFW		INDF							; W = INDF
 		XORWF		20H, W							; 20H X INDF (W = 30H)
 		BTFSS		STATUS, Z
@@ -96,7 +97,7 @@ PERCORRE_NUMERO:
 		BTFSS		STATUS, Z
  		RETURN 		
 		
-		BSF 			FLAG, 7							; Colocando 1 no bit 7 da flag		; 
+		BSF 		FLAG, 7							; Colocando 1 no bit 7 da flag		; 
 		GOTO 		FIM								; encerrando pois nenhum dos numeros e igual
 	
 FIM: 	GOTO 		FIM
