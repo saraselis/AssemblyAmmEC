@@ -17,4 +17,10 @@
             MOVWF   TRISB               ; ?
             BCF     STATUS, RP0         ; Volta p/ Banco 0 da RAM 
 
-            BSRF    PORTA, 0            ; Led apaga (Ra0)
+            BSF    PORTA, 0            ; Led apaga (Ra0)
+            
+CH_SOLTA:   BTFSC   PORTB, 0            ; CHAVE FOI PRESSICONADA?
+            GOTO    CH_SOLTA            ; NAO AGUARDA
+
+CH_ACIONADA:    BTFSS   PORTB, 0            ; CHAVE FOI SOLTA?
+                GOTO    CH_ACIONADA            ; NAO AGUARDA
