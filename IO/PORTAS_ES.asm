@@ -8,19 +8,32 @@
 
 ; CHAveS: SOLTA -> 0, ACIONADA -> 1
 
-            ORG     000H
+                ORG     000H
 
-            BSRF    STATUS, RP0         ; Muda p; Banco 1 da RAM
-            MOVLW   0FCH                ; W = 252
-            MOVWF   TRISA               ; ?
-            MOVLW   B'11100111'         ; W = 231
-            MOVWF   TRISB               ; ?
-            BCF     STATUS, RP0         ; Volta p/ Banco 0 da RAM 
+                BSRF    STATUS, RP0         ; Muda p; Banco 1 da RAM
+                MOVLW   0FCH                ; W = 252
+                MOVWF   TRISA               ; ?
+                MOVLW   B'11100111'         ; W = 231
+                MOVWF   TRISB               ; ?
+                BCF     STATUS, RP0         ; Volta p/ Banco 0 da RAM 
 
-            BSF    PORTA, 0            ; Led apaga (Ra0)
+                BSF     PORTA, 0            ; Led apaga (Ra0)
+                BSF     PORTB, 1            ; Led apaga (Ra1)    
+        
             
-CH_SOLTA:   BTFSC   PORTB, 0            ; CHAVE FOI PRESSICONADA?
-            GOTO    CH_SOLTA            ; NAO AGUARDA
+VOLTA:          BTFSS   PORTB, 0            ; CHAVE FOI PRESSICONADA?
+                BCF     PORTA, 0            ; lED aCEND (RA0)
+                
+                BTFSC   PORTB, 0            ; CHAVE FOI SOLTA?
+                BSF     PORTA, 0            ; apaga led ra0
 
-CH_ACIONADA:    BTFSS   PORTB, 0            ; CHAVE FOI SOLTA?
-                GOTO    CH_ACIONADA            ; NAO AGUARDA
+
+                BTFSS   PORTB, 1            ; CHAVE FOI PRESSICONADA?
+                BCF     PORTA, 1            ; lED aCEND (RA0)
+
+                BTFSC   PORTB, 1           ; CHAVE FOI SOLTA?
+                BSF     PORTA, 1            ; apaga (rb1)
+
+                GOTO    VOLTA
+
+                END
