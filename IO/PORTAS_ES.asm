@@ -20,14 +20,14 @@
                 BSF     PORTA, 0            ; Led apaga (Ra0)
                 BSF     PORTB, 1            ; Led apaga (Ra1)    
         
-            
+                ; chave 1
 VOLTA:          BTFSS   PORTB, 0            ; CHAVE FOI PRESSICONADA?
                 BCF     PORTA, 0            ; lED aCEND (RA0)
                 
                 BTFSC   PORTB, 0            ; CHAVE FOI SOLTA?
                 BSF     PORTA, 0            ; apaga led ra0
 
-
+; chave 2
                 BTFSS   PORTB, 1            ; CHAVE FOI PRESSICONADA?
                 BCF     PORTA, 1            ; lED aCEND (RA0)
 
