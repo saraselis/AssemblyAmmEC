@@ -1,16 +1,16 @@
 #INCLUDE P16F628A.INC 
 
-; ENTRADA: RBO, RB1, RB2
-; SAIDA: RA0, RA1, RB3 E RB4
+; ENTRADA: RBO, RB1
+; SAIDA: RB3 E RB4
 ; TRIS: 0 -> SAIDA, 1 -> ENTRADA
-; TRISA: 11111100 (FCH) -> porta de saida (analisa pelo ultimo digito q e o)
+; TRISA: 11111100 (ffh) -> porta de saida (analisa pelo ultimo digito q e o)
 ; TRISB: 11100111 (E7H) -> porta de entrada (analisa pelo ultimo digito q e 1)
 
 ; CHAveS: SOLTA -> 0, ACIONADA -> 1
 
                 ORG     000H
 
-                BSRF    STATUS, RP0         ; Muda p; Banco 1 da RAM
+                BSF    STATUS, RP0         ; Muda p; Banco 1 da RAM
                 MOVLW   0FCH                ; W = 252
                 MOVWF   TRISA               ; ?
                 MOVLW   B'11100111'         ; W = 231
