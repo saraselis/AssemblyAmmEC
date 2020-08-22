@@ -12,10 +12,9 @@
 #DEFINE     AF          PORTB, 3
 
 ; ------- Variaveis  -------
-#DEFINE     DESL_LED    BCF     LED 
-#DEFINE     LIGA_LED    BSF     LED 
-#DEFINE     DESL_AF     BCF     AF
-#DEFINE     LIGA_AF     BSF     AF
+#DEFINE     LIGA_LED    BCF     LED 
+#DEFINE     DESL_LED    BSF     LED 
+#DEFINE     BCF         AF
 
 ; ------- Bancos de memoria  -------
 #DEFINE	    BANK0       BCF     STATUS, RP0			
@@ -47,54 +46,56 @@ INICIO:
         MOVWF       TRISB                               ; Somente RB3 como saida
         BANK0                                           ; Volta para o Banco 0
 
-        DESL_LED                                        ; Desliga o LED
-        DESL_AF                                         ; Desliga o Auto Falante
+        LIGA_LED                                        ; Desliga o LED
+        BCF         AF                                  ; Desliga o Auto Falante
 
 ; ------- Subrotinas  -------
 
-; # Nota Do> Do = 261,63Hz -> T = 3,82 mseg | T/2 = 1,911mseg = 1.911 useg #
+; # Nota Do> Do = 261,63Hz -> T = 3,82 mseg | T/2 = 1,911mseg = 1.911 useg
 TESTA_DO:     
         BTFSC       CH_DO                               ; A Chave do Do esta acionada?
-        GOTO        TESTA_RE                            ; 1 - Testa a chave do RE
+        GOTO        TST_RE                              ; Se nao, testa a chave do RE
 
-        LIGA_LED                                        ; 0 - Liga o led
+        BCF         LED                                 ; Se sim, liga o led
 GERA_DO:    
-        LIGA_AF                                         ; Ligar o auto falante
-        CALL        TEMPO_DO                            ; Tocar a nota pelo tempo determinado do Do
-        DESL_AF                                         ; Desligar o auto falante
-        CALL        TEMPO_DO                            ; Esperar o tempo da nota
+        BSF         AF                                  ; liga auto falante
+        CALL        T2_DO                   
+        BCF         AF                                  ; desliga auto falante
+        CALL        T2_DO
 
-        BTFSS       CH_DO                               ; A chave continua pressionada?
-        GOTO        GERA_DO                             ; 0 - Gerar a nota novamente
-        DESL_LED                                        ; 1 - Apagar o led
+        BTFSS       CH_DO                               ; chave do foi solta?
+        GOTO        GERA_DO                 
+        BCF         LED                                 ;apaga o led
 
-TESTA_RE:     
-        BTFSC       CH_RE                               ; A Chave do Re foi acionada?
-        GOTO        TESTA_MI                            ; 1 - Testa a chave do mi
+TST_RE:     
+        BTFSC       CH_RE                   ; Chave do re acionada?????
+        GOTO        TST_MI
         
-        LIGA_LED                                        ; 0 - Acende led
+        BCF         LED                     ; Acende led
 
-; # Nota Re> Re = 293,66hz -> T = 3.45 mseg -> T/2 = 1,7025mseg = 1.702,5
 GERA_RE:    
-        LIGA_AF                                         ; Ligar auto falante
-        CALL        TEMPO_RE                            ; Tocar a nota pelo tempo determinado do Re
-        DESL_AF                                         ; Desliga o auto falante
-        CALL        TEMPO_RE                            ; Esperar o tempo da nota
+        BSF         AF                      ; liga auto falante
+        CALL        T2_RE                  
+        BCF         AF                      ; desliga auto falante
+        CALL        T2_RE
 
-        BTFSS       CH_RE                               ; A chave foi solta?
-        GOTO        GERA_RE                             ; 0 - Gerar a nota novamente
-        LIGA_LED                                        ; 1 - Liga o led
+        BTFSS       CH_RE                   ; chave do foi solta?
+        GOTO        GERA_RE                
+        BCF         LED                     ;apaga o led
 
-TESTA_MI:     
-        BTFSC       CH_MI                               ; A Chave do Mi foi pressionada?
-        GOTO        TST_FA                              ; 1 - Testa a chave do Fa
+; re = 293,66hz -> t=3.45 mseg -> T/2 = 1,7025mseg =1.702,5
 
-        LIGA_LED                                        ; 0 - Liga o led
+
+TST_MI:     
+        BTFSC       CH_MI                   ; Chave do re acionada?????
+        GOTO        TST_FA
+
+        BCF         LED                     ; Acende led
 GERA_MI:    
-        LIGA_AF                                         ; Liga auto falante
-        CALL        TEMPO_MI                            ; Toca a nota pelo tempo do Mi
-        DESL_AF                                         ; Desliga auto falante
-        CALL        TEMPO_MI                            ; 
+        BSF         AF                      ; liga auto falante
+        CALL        T2_MI                  
+        BCF         AF                      ; desliga auto falante
+        CALL        T2_MI
 
         BTFSS       CH_MI                   ; chave do foi solta?
         GOTO        GERA_MI                
@@ -154,17 +155,16 @@ GERA_LA:
 
 
 ; ---- subrotinas
-TEMPO_DO:      
+T2_DO:      
         MOVLW       .238            ; 238 x 8 x CM(1) = 1.904 [que é o valor total do dó]
         MOVWF       CONTA           ; 1cm = 1 micro segundo
-        GOTO        LOOP1
 
-TEMPO_RE:      
+T2_RE:      
         MOVLW       .212        ; 1702
         MOVWF       CONTA       ; 212 x 8 x CM(1) = 1696
         GOTO        LOOP1
 
-TEMPO_MI:      
+T2_MI:      
         MOVLW       .189           ; 189 x 8 x CM = 1.512
         MOVWF       CONTA       ;  x 8 x CM(1) =  
         GOTO        LOOP1
