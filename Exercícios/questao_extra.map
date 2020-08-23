@@ -1,0 +1,65 @@
+MPLINK 4.49, Linker
+Linker Map File - Created Sun Aug 23 12:29:36 2020
+
+                                 Section Info
+                  Section       Type    Address   Location Size(Bytes)
+                ---------  ---------  ---------  ---------  ---------
+                   .org_0       code   0x000000    program   0x000000
+                   .org_1       code   0x000000    program   0x000004
+                   .org_2       code   0x000004    program   0x0000dc
+
+
+
+                              Program Memory Usage 
+                               Start         End      
+                           ---------   ---------      
+                            0x000000    0x0000df      
+            224 out of 33048 program addresses used, program memory utilization is 0%
+
+
+
+                              Symbols - Sorted by Name
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                 ABRE_CAT   0x000084    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                   FIMINT   0x00002e    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                   INICIO   0x000038    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                  INT_TMR   0x00001e    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                     LOOP   0x0000c6    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                    LOOP1   0x0000a6    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                    LOOP2   0x000098    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                    LOOP3   0x0000b4    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                 LP_05SEG   0x0000b0    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                 LP_10SEG   0x000094    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                   LP_1MS   0x0000c2    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                 LP_200MS   0x0000be    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                  LP_8SEG   0x0000a2    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                 VER_PASS   0x000070    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+               VER_SENSOR   0x000058    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                  VIOLADO   0x0000dc    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                    VOLTA   0x00004c    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+
+
+
+                              Symbols - Sorted by Address
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                  INT_TMR   0x00001e    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                   FIMINT   0x00002e    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                   INICIO   0x000038    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                    VOLTA   0x00004c    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+               VER_SENSOR   0x000058    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                 VER_PASS   0x000070    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                 ABRE_CAT   0x000084    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                 LP_10SEG   0x000094    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                    LOOP2   0x000098    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                  LP_8SEG   0x0000a2    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                    LOOP1   0x0000a6    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                 LP_05SEG   0x0000b0    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                    LOOP3   0x0000b4    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                 LP_200MS   0x0000be    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                   LP_1MS   0x0000c2    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                     LOOP   0x0000c6    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+                  VIOLADO   0x0000dc    program     static C:\Users\stefanini.STFBSBC044667-L\Documents\AssemblyAMM-master\Exercícios\questao_extra.asm
+
+

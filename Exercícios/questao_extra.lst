@@ -1,0 +1,616 @@
+MPASM  5.51                 QUESTAO_EXTRA.ASM   8-23-2020  12:29:35         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001 ; ------- Dados da questao  -------
+                      00002 ; 6MHz -> CM: 666, 6666x10-9 nanoseg       0,6666 useg
+                      00003 
+                      00004 ; Para 5KHZ ->          Tempo           = 1/f           = 1/5KHZ        = 200useg
+                      00005 ;                       Tempo/2         = 100useg
+                      00006 ;                       Tmr0            = 100useg/0,6666useg = 150,01 = 150  
+                      00007 
+                      00008 ; Para 1KHZ ->  Tempo   = 1/f           = 1/1KZ         = 1mseg
+                      00009 ;                       Tempo/2 = 0,5mseg
+                      00010 ;                       Tmr0            = 0.5mseg/0,6666useg    = 750,07 = 750
+                      00011         ; Prescaler de 4 ->     Tmr0            = 0,5meg/(4x0,6666useg) = 187,51 = 188
+                      00012 
+                      00013 ; -------  Processador utilizado -------
+                      00014 #INCLUDE P16F628A.INC 
+                      00001         LIST
+                      00002 
+                      00003 ;==========================================================================
+                      00004 ;  MPASM PIC16F628A processor include
+                      00005 ; 
+                      00006 ;  (c) Copyright 1999-2013 Microchip Technology, All rights reserved
+                      00007 ;==========================================================================
+                      00008 
+Message[301]: MESSAGE: (Processor-header file mismatch.  Verify selected processor.)
+                      00385         LIST
+                      00015 
+                      00016 ; ------- Inputs e Outputs  -------
+                      00017 #DEFINE          LED_VD                 PORTB, 5                                                        
+                             ; saida
+                      00018 #DEFINE          LED_VM                 PORTB, 6                                                        
+                             ; saida
+                      00019 #DEFINE          AF                     PORTA, 1                                                        
+                             ; saida
+                      00020 #DEFINE          LUZ                    PORTB, 2                                                        
+                             ; saida
+                      00021 #DEFINE          RELE                   PORTA, 0                                                        
+                             ; saida
+                      00022 #DEFINE                 SENSOR          PORTA, 2
+                      00023 ; ------- Registradores de uso geral  -------
+                      00024 
+                      00025 
+                      00026 ; ------- Bancos de memoria  -------
+                      00027 #DEFINE         BANK0                   BCF             STATUS, RP0                             ; mnemon
+                            ico - banco 0           
+                      00028 #DEFINE         BANK1                   BSF             STATUS, RP0                             ; mnemon
+                            ico - banco 1
+                      00029 
+                      00030 ; ------- Contadores  -------
+  00000020            00031 CONTA1          EQU             20H
+  00000021            00032 CONTA2          EQU             21H
+  00000022            00033 CONTA3          EQU             22H
+  00000023            00034 CONTA4          EQU             23H
+  00000024            00035 CONTA5          EQU             24H
+                      00036 
+MPASM  5.51                 QUESTAO_EXTRA.ASM   8-23-2020  12:29:35         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00037 ; ------- Variaveis  -------
+  00000025            00038 FLAGS                   EQU           25H
+  00000026            00039 SALVA_W                 EQU           26H
+  00000027            00040 SALVA_S                 EQU           27H
+  00000028            00041 CONTADOR        EQU             28H
+                      00042 
+                      00043 ; ------- Definindo origem  -------
+000000                00044                 ORG                     000H
+000000 EF1C F000      00045                 GOTO            INICIO
+                      00046 
+                      00047 
+                      00048 ; ------- Salvando o contexto da interrupcao -------
+000004                00049                 ORG                     004H
+                      00050 
+000004 6E26           00051                         MOVWF                   SALVA_W                                                 
+                             ; Salva o conteudo de w
+000006 3803           00052                         SWAPF                   STATUS,         W                                       
+                                     ; Salva o conteudo do status sem alterar a flag z
+000008 6E27           00053                         MOVWF                   SALVA_S                                                 
+                             ; PS: esse valor esta com os nibbles invertidos
+                      00054 
+                      00055 ; ------- Tratamento da interrupcao -------
+00000A A20B           00056                 BTFSS                   INTCON,         INTF                                            
+                            ; Interrupcao foi externa?
+00000C EF0F F000      00057                         GOTO                    INT_TMR                                                 
+                            ; 0 - nao foi externa 
+000010 8025           00058                         BSF                     FLAGS,  0                                               
+                                    ; 1 - foi externa
+000012 8225           00059                         BSF                     FLAGS,  1                                               
+                                    ; Zerando as Flags               
+000014 0E1E           00060                         MOVLW                   .30                                                     
+                                    ; ? 
+000016 6F94           00061                         MOVWF                   LP_10SEG                                                
+                                    ; Vai para o Loop de 10 segundos
+                      00062         
+000018 920B           00063                         BCF             INTCON,         INTF                                    ;  Zera 
+                            o bit que gerou a interrupcao externa
+                      00064                                                                                                         
+                            ; Se a interrupco nao foi externa, trata como interna
+00001A EF17 F000      00065                         GOTO            FIMINT
+                      00066 
+00001E                00067 INT_TMR: 
+00001E 940B           00068                 BCF                     INTCON,         T0IF                                            
+                            ; Zera flag de interrupcao do timer 0
+000020 A225           00069                 BTFSS                   FLAGS,  1
+000022 EF2C F000      00070                 GOTO                    VER_SENSOR
+000026 0E64           00071                 MOVLW                   .100
+000028 6E01           00072                 MOVWF           TMR0                                                            ; Recarr
+                            egar o timer
+                      00073                 ;MOVLW                  B'0000000'
+                      00074                 ;XOR                    PORTB,  F                                               ; 
+00002A EF17 F000      00075                 GOTO                    FIMINT
+                      00076 
+MPASM  5.51                 QUESTAO_EXTRA.ASM   8-23-2020  12:29:35         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00002E                00077 FIMINT: 
+00002E 3827           00078                 SWAPF                   SALVA_S, W                                                      
+                            ; Desinverter o valor dos nibbles, recupera o valor do status
+000030 6E03           00079                 MOVWF                   STATUS                                                          
+                            ; Recupera o valor do Status
+000032 3A26           00080                 SWAPF                   SALVA_W,        F         
+000034 3826           00081                 SWAPF                   SALVA_W, W                                                      
+                            ; Recupera o valor de status
+000036 0010           00082                 RETFIE 
+                      00083 
+                      00084 ; ------- Setando as entradas e saidas  -------
+000038                00085 INICIO:
+000038 8A03           00086                 BANK1                                                                           ; Vai pa
+                            ra o banco 1 de memoria
+00003A 0EF8           00087                 MOVLW           B'11111000'                                             ; RA0, RA1, RA2 
+                            como saidas 
+00003C 6F85           00088                 MOVWF           TRISA 
+00003E 0E9B           00089                 MOVLW           B'10011011'                                             ; RB2, RB5, RB6 
+                            como saidas
+000040 6F86           00090                 MOVWF           TRISB
+                      00091                 
+000042 0EC1           00092                 MOVLW                   B'11000001'                                             ; Int ex
+                            terna por borda de subida, prescaler de 1:4
+000044 6F81           00093                 MOVWF                   OPTION_REG
+                      00094 
+000046 0EB0           00095                         MOVLW                   B'10110000'
+000048 6E0B           00096                         MOVWF                   INTCON
+00004A 9A03           00097                 BANK0                                                                           ; Volta 
+                            para o banco 0 de memoria
+                      00098 
+00004C                00099 VOLTA:  
+00004C 9C06           00100                 BCF                     LED_VM                                                  ; Liga l
+                            ed vermelho
+00004E 9406           00101                 BCF                     LUZ                                                             
+                            ; Desligar sinal luminoso
+000050 9005           00102                 BCF                     RELE                                                            
+                            ; Desligar Rele
+000052 9205           00103                 BCF                     AF                                                              
+                            ; Desligar Auto Falante
+                      00104 
+000054 9025           00105                 BCF                     FLAGS, 0                                                        
+                            ; Zerando as Flags
+000056 9225           00106                 BCf                     FLAGS, 1                                                        
+                            ; Zerando as Flags                                                                      
+                      00107 
+                      00108 ; ------- Sub-rotinas  -------
+                      00109 
+000058                00110 VER_SENSOR:
+000058 B225           00111                 BTFSC           FLAGS, 1                                                        ; O sens
+                            or foi violado?
+00005A EF6E F000      00112                 GOTO            VIOLADO                                                 ; 1 - Vai para i
+                            nterrupcao de violacao
+00005E A025           00113                 BTFSS           FLAGS, 0                                                        ; 0 - Ve
+MPASM  5.51                 QUESTAO_EXTRA.ASM   8-23-2020  12:29:35         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                            rifica o cartao de acesso
+                      00114                 
+000060 EF2C F000      00115                 GOTO            VER_SENSOR                                              ; 0 - Nao ativad
+                            o ver de novo o sensor
+000064 8025           00116                 BSF                     FLAGS, 0                                                        
+                            ; 1 - Setando a flag zero como 1, segue o baile
+                      00117                 
+000066 0E14           00118                 MOVLW           .20                                                             ; Adicio
+                            nando 20 ao Worker
+000068 6E28           00119                 MOVWF           CONTADOR                                                ; Adicionando 20
+                             ao contador    
+                      00120 
+00006A 8C06           00121                 BSF                     LED_VM                                                  ; Apaga 
+                            o Led Vermelho
+00006C 9A06           00122                 BCF                     LED_VD                                                  ; Liga o
+                             Led Verde
+00006E 8005           00123                 BSF                     RELE                                                            
+                            ; Ativa o Rele  
+                      00124 
+000070                00125 VER_PASS:
+000070 B405           00126                 BTFSC           SENSOR                                                  ; Verifica o sen
+                            sor             
+000072 EF42 F000      00127                 GOTO            ABRE_CAT                                                        ; 1 - Ab
+                            rir a catraca
+                      00128                 
+000076 EC58 F000      00129                 CALL                    LP_05SEG                                                        
+                            ; Aguarda 0,5 Segundos
+00007A 2E28           00130                 DECFSZ          CONTADOR, F                                             ; Decrementando 
+                            do contador
+                      00131                 
+00007C EF38 F000      00132                 GOTO            VER_PASS                                                        ; 1 - Ve
+                            rifica de novo
+000080 EF42 F000      00133                 GOTO            ABRE_CAT                                                        ; 0 - pu
+                            la
+                      00134         
+                      00135 ;  Bit 0: 0 = Leitora não ativada; 1 = Leitora de cartão gerou um sinal
+                      00136 
+                      00137 
+000084                00138 ABRE_CAT:
+000084 8C06           00139                 BSF                     LED_VM                                                  ; Apaga 
+                            do Led Vermelho
+000086 9A06           00140                 BCF                     LED_VD                                                  ; Liga o
+                             Led Verde
+000088 8005           00141                 BSF                     RELE                                                            
+                            ; Ativa o Rele
+00008A EC4A F000      00142                 CALL                    LP_10SEG                                                        
+                            ; Espera os 10 segundos da catraca
+00008E 9005           00143                 BCF                     RELE                                                            
+                            ; Desativa o Rele
+000090 EF26 F000      00144                 GOTO            VOLTA
+                      00145 
+                      00146 ; ------- Loops -------
+                      00147         
+MPASM  5.51                 QUESTAO_EXTRA.ASM   8-23-2020  12:29:35         PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+000094                00148 LP_10SEG:
+000094 0E32           00149                 MOVLW           .50                                                              ; 50 x 
+                             200mseg = 10s
+000096 6E23           00150                 MOVWF           CONTA4
+                      00151 
+000098                00152 LOOP2:      
+000098 EC5F F000      00153                 CALL                    LP_200MS                                                
+00009C 2E23           00154                 DECFSZ          CONTA4, F
+00009E EF4C F000      00155                 GOTO                    LOOP2
+                      00156 
+0000A2                00157 LP_8SEG:
+0000A2 0E28           00158                 MOVLW           .40                                                              ; 40 x 
+                             200mseg = 8s
+0000A4 6E22           00159                 MOVWF           CONTA3
+                      00160                 
+0000A6                00161 LOOP1:      
+0000A6 EC5F F000      00162                 CALL                    LP_200MS                                                
+0000AA 2E22           00163                 DECFSZ          CONTA3, F
+0000AC EF53 F000      00164                 GOTO                    LOOP1
+                      00165 
+0000B0                00166 LP_05SEG:
+0000B0 0E03           00167                 MOVLW           .3                                                               ; 2,5 x
+                              200mseg = 0,5s
+0000B2 6E24           00168                 MOVWF           CONTA5
+                      00169                 
+0000B4                00170 LOOP3:      
+0000B4 EC5F F000      00171                 CALL                    LP_200MS                                                
+0000B8 2E24           00172                 DECFSZ          CONTA5, F
+0000BA EF5A F000      00173                 GOTO                    LOOP3
+                      00174 
+                      00175 
+0000BE                00176 LP_200MS:
+0000BE 0EC8           00177                 MOVLW           .200                                                             ; 200 x
+                             1 mseg = 200 mseg
+0000C0 6E21           00178                 MOVWF           CONTA2
+                      00179 
+0000C2                00180 LP_1MS:                                                                                                 
+0000C2 0ED7           00181                 MOVLW           .215                                                             ; 7 x ?
+                             x 0,6666 useg = 1mseg
+0000C4 6E20           00182                 MOVWF           CONTA1                                                   ; x = 215
+                      00183 
+0000C6                00184 LOOP:           
+0000C6 0000           00185                 NOP                                                                                     
+0000C8 0000           00186                 NOP                                                                                     
+                             
+0000CA 0000           00187                 NOP
+0000CC 0000           00188                 NOP
+0000CE 2E20           00189                 DECFSZ          CONTA1, F                                                       
+0000D0 EF63 F000      00190                 GOTO                    LOOP
+                      00191 
+0000D4 2E21           00192                  DECFSZ         CONTA2, F                                                       
+0000D6 EF61 F000      00193                 GOTO                    LP_1MS
+0000DA 0012           00194                 RETURN  
+MPASM  5.51                 QUESTAO_EXTRA.ASM   8-23-2020  12:29:35         PAGE  6
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00195 
+                      00196 ; --------- labels para excluir -------
+0000DC                00197 VIOLADO:        
+                      00198                 ; nao deu tempo de programar certinho as interrupcoes
+                      00199                 ; deixei a subrotina para a pipeline manter o sentido
+0000DC EF6E F000      00200                 GOTO    VIOLADO
+                      00201 
+                      00202                 END
+MPASM  5.51                 QUESTAO_EXTRA.ASM   8-23-2020  12:29:35         PAGE  7
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+ABRE_CAT                          00000084
+ADDEN                             00000003
+ADEN                              00000003
+AF                                PORTA, 1
+BANK0                             BCF             STATUS, RP0
+BANK1                             BSF             STATUS, RP0
+BRGH                              00000002
+C                                 00000000
+C1INV                             00000004
+C1OUT                             00000006
+C2INV                             00000005
+C2OUT                             00000007
+CCP1CON                           00000017
+CCP1IE                            00000002
+CCP1IF                            00000002
+CCP1M0                            00000000
+CCP1M1                            00000001
+CCP1M2                            00000002
+CCP1M3                            00000003
+CCP1X                             00000005
+CCP1Y                             00000004
+CCPR1                             00000015
+CCPR1H                            00000016
+CCPR1L                            00000015
+CIS                               00000003
+CM0                               00000000
+CM1                               00000001
+CM2                               00000002
+CMCON                             0000001F
+CMIE                              00000006
+CMIF                              00000006
+CONTA1                            00000020
+CONTA2                            00000021
+CONTA3                            00000022
+CONTA4                            00000023
+CONTA5                            00000024
+CONTADOR                          00000028
+CREN                              00000004
+CSRC                              00000007
+DATA_CP_OFF                       00003FFF
+DATA_CP_ON                        00003EFF
+DC                                00000001
+EEADR                             0000009B
+EECON1                            0000009C
+EECON2                            0000009D
+EEDATA                            0000009A
+EEIE                              00000007
+EEIF                              00000007
+F                                 00000001
+FERR                              00000002
+FIMINT                            0000002E
+FLAGS                             00000025
+FSR                               00000004
+MPASM  5.51                 QUESTAO_EXTRA.ASM   8-23-2020  12:29:35         PAGE  8
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+GIE                               00000007
+INDF                              00000000
+INICIO                            00000038
+INTCON                            0000000B
+INTE                              00000004
+INTEDG                            00000006
+INTF                              00000001
+INT_TMR                           0000001E
+IRP                               00000007
+LED_VD                            PORTB, 5
+LED_VM                            PORTB, 6
+LOOP                              000000C6
+LOOP1                             000000A6
+LOOP2                             00000098
+LOOP3                             000000B4
+LP_05SEG                          000000B0
+LP_10SEG                          00000094
+LP_1MS                            000000C2
+LP_200MS                          000000BE
+LP_8SEG                           000000A2
+LUZ                               PORTB, 2
+NOT_BO                            00000000
+NOT_BOD                           00000000
+NOT_BOR                           00000000
+NOT_PD                            00000003
+NOT_POR                           00000001
+NOT_RBPU                          00000007
+NOT_T1SYNC                        00000002
+NOT_TO                            00000004
+OERR                              00000001
+OPTION_REG                        00000081
+OSCF                              00000003
+PCL                               00000002
+PCLATH                            0000000A
+PCON                              0000008E
+PEIE                              00000006
+PIE1                              0000008C
+PIR1                              0000000C
+PORTA                             00000005
+PORTB                             00000006
+PR2                               00000092
+PS0                               00000000
+PS1                               00000001
+PS2                               00000002
+PSA                               00000003
+RA0                               00000000
+RA1                               00000001
+RA2                               00000002
+RA3                               00000003
+RA4                               00000004
+RA5                               00000005
+RA6                               00000006
+RA7                               00000007
+MPASM  5.51                 QUESTAO_EXTRA.ASM   8-23-2020  12:29:35         PAGE  9
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+RB0                               00000000
+RB1                               00000001
+RB2                               00000002
+RB3                               00000003
+RB4                               00000004
+RB5                               00000005
+RB6                               00000006
+RB7                               00000007
+RBIE                              00000003
+RBIF                              00000000
+RCIE                              00000005
+RCIF                              00000005
+RCREG                             0000001A
+RCSTA                             00000018
+RD                                00000000
+RELE                              PORTA, 0
+RP0                               00000005
+RP1                               00000006
+RX9                               00000006
+RX9D                              00000000
+SALVA_S                           00000027
+SALVA_W                           00000026
+SENSOR                            PORTA, 2
+SPBRG                             00000099
+SPEN                              00000007
+SREN                              00000005
+STATUS                            00000003
+SYNC                              00000004
+T0CS                              00000005
+T0IE                              00000005
+T0IF                              00000002
+T0SE                              00000004
+T1CKPS0                           00000004
+T1CKPS1                           00000005
+T1CON                             00000010
+T1OSCEN                           00000003
+T2CKPS0                           00000000
+T2CKPS1                           00000001
+T2CON                             00000012
+TMR0                              00000001
+TMR0IE                            00000005
+TMR0IF                            00000002
+TMR1                              0000000E
+TMR1CS                            00000001
+TMR1H                             0000000F
+TMR1IE                            00000000
+TMR1IF                            00000000
+TMR1L                             0000000E
+TMR1ON                            00000000
+TMR2                              00000011
+TMR2IE                            00000001
+TMR2IF                            00000001
+TMR2ON                            00000002
+MPASM  5.51                 QUESTAO_EXTRA.ASM   8-23-2020  12:29:35         PAGE 10
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+TOUTPS0                           00000003
+TOUTPS1                           00000004
+TOUTPS2                           00000005
+TOUTPS3                           00000006
+TRISA                             00000085
+TRISA0                            00000000
+TRISA1                            00000001
+TRISA2                            00000002
+TRISA3                            00000003
+TRISA4                            00000004
+TRISA5                            00000005
+TRISA6                            00000006
+TRISA7                            00000007
+TRISB                             00000086
+TRISB0                            00000000
+TRISB1                            00000001
+TRISB2                            00000002
+TRISB3                            00000003
+TRISB4                            00000004
+TRISB5                            00000005
+TRISB6                            00000006
+TRISB7                            00000007
+TRMT                              00000001
+TX9                               00000006
+TX9D                              00000000
+TXEN                              00000005
+TXIE                              00000004
+TXIF                              00000004
+TXREG                             00000019
+TXSTA                             00000098
+VER_PASS                          00000070
+VER_SENSOR                        00000058
+VIOLADO                           000000DC
+VOLTA                             0000004C
+VR0                               00000000
+VR1                               00000001
+VR2                               00000002
+VR3                               00000003
+VRCON                             0000009F
+VREN                              00000007
+VROE                              00000006
+VRR                               00000005
+W                                 00000000
+WR                                00000001
+WREN                              00000002
+WRERR                             00000003
+Z                                 00000002
+_BODEN_OFF                        00003FBF
+_BODEN_ON                         00003FFF
+_BOREN_OFF                        00003FBF
+_BOREN_ON                         00003FFF
+_CONFIG                           00002007
+_CPD_OFF                          00003FFF
+MPASM  5.51                 QUESTAO_EXTRA.ASM   8-23-2020  12:29:35         PAGE 11
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_CPD_ON                           00003EFF
+_CP_OFF                           00003FFF
+_CP_ON                            00001FFF
+_DEVID1                           00002006
+_ER_OSC_CLKOUT                    00003FFF
+_ER_OSC_NOCLKOUT                  00003FFE
+_EXTCLK_OSC                       00003FEF
+_FOSC_ECIO                        00003FEF
+_FOSC_EXTRCCLK                    00003FFF
+_FOSC_EXTRCIO                     00003FFE
+_FOSC_HS                          00003FEE
+_FOSC_INTOSCCLK                   00003FFD
+_FOSC_INTOSCIO                    00003FFC
+_FOSC_LP                          00003FEC
+_FOSC_XT                          00003FED
+_HS_OSC                           00003FEE
+_IDLOC0                           00002000
+_IDLOC1                           00002001
+_IDLOC2                           00002002
+_IDLOC3                           00002003
+_INTOSC_OSC_CLKOUT                00003FFD
+_INTOSC_OSC_NOCLKOUT              00003FFC
+_INTRC_OSC_CLKOUT                 00003FFD
+_INTRC_OSC_NOCLKOUT               00003FFC
+_LP_OSC                           00003FEC
+_LVP_OFF                          00003F7F
+_LVP_ON                           00003FFF
+_MCLRE_OFF                        00003FDF
+_MCLRE_ON                         00003FFF
+_PWRTE_OFF                        00003FFF
+_PWRTE_ON                         00003FF7
+_RC_OSC_CLKOUT                    00003FFF
+_RC_OSC_NOCLKOUT                  00003FFE
+_WDTE_OFF                         00003FFB
+_WDTE_ON                          00003FFF
+_WDT_OFF                          00003FFB
+_WDT_ON                           00003FFF
+_XT_OSC                           00003FED
+__18F452                          00000001
+
+
+MEMORY USAGE MAP ('X' = Used,  '-' = Unused)
+
+0000 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0040 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0080 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+MPASM  5.51                 QUESTAO_EXTRA.ASM   8-23-2020  12:29:35         PAGE 12
+
+
+MEMORY USAGE MAP ('X' = Used,  '-' = Unused)
+
+
+00C0 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX ---------------- ----------------
+
+All other memory blocks unused.
+
+Program Memory Bytes Used:   224
+Program Memory Bytes Free: 32544
+
+
+Errors   :     0
+Warnings :     0 reported,     0 suppressed
+Messages :     1 reported,     0 suppressed
+
+
