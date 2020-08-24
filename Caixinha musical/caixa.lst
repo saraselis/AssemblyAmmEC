@@ -1,0 +1,740 @@
+MPASM  5.51                         CAIXA.ASM   8-23-2020  20:58:28         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001 ; ------- Descricao do problema  -------
+                      00002 ; | RA0 -> LED       | RA1 -> Chave fa | RA2 -> chave sol | RB0 -> chave dó |
+                      00003 ; | RB1 -> chave fá  | RB2 -> chave ré | RB3 -> AF        | RB4 -> Chave lá |
+                      00004 
+                      00005 ; C = 261,63 Hz -> T = 3,822 mseg / T/2 = 1,911 mseg = 1.911 useg
+                      00006 ; D = 293,66 Hz -> T = 3,405 mseg / T/2 = 1,7025 mseg = 1.702,5 useg
+                      00007 ; D# = 311,13 Hz -> T = 3,214 mseg / T/2 = 1,607 mseg = 1.607 useg
+                      00008 ; E = 329,63 Hz -> T = 3,0337 mseg / T/2 = 1,51685 mseg = 1.516,85 useg
+                      00009 ; G = 392 Hz -> T = 2,551 mseg / T/2 = 1,2755 mseg = 1.275,5 useg
+                      00010 ; G# = 415,3 Hz -> T = 2,407 mseg / T/2 = 1,2035 mseg = 1.203,5 useg
+                      00011 ; A = 440 Hz -> T = 2,273 mseg / T/2 = 1,1365 mseg = 1.136,5 useg
+                      00012 ; B = 493,88 Hz -> T = 2,0247 mseg / T/2 = 1,0123 mseg = 1.012,35useg
+                      00013 
+                      00014 ; C, D, D#, E, G, G#, A, B,  
+                      00015 ; # Fur Elise
+                      00016         ; E D# E D# E B D C A C E A B E G# B DO
+                      00017 
+                      00018 ; # Oh Susana
+                      00019         ; C D E G G A G E C D E E D C D C D 
+                      00020 
+                      00021 ; -------  Processador utilizado -------
+                      00022 #INCLUDE P16F628A.INC 
+                      00001         LIST
+                      00002 
+                      00003 ;==========================================================================
+                      00004 ;  MPASM PIC16F628A processor include
+                      00005 ; 
+                      00006 ;  (c) Copyright 1999-2013 Microchip Technology, All rights reserved
+                      00007 ;==========================================================================
+                      00008 
+Message[301]: MESSAGE: (Processor-header file mismatch.  Verify selected processor.)
+                      00385         LIST
+                      00023 
+                      00024 ; ------- Inputs e Outputs  -------
+                      00025 #DEFINE         CH_DO           PORTB, 1
+                      00026 #DEFINE         CH_RE                   PORTB, 2
+                      00027 #DEFINE         CH_RES          PORTB, 3
+                      00028 #DEFINE         CH_MI           PORTB, 4
+                      00029 #DEFINE         CH_SOL          PORTB, 5 
+                      00030 #DEFINE         CH_SOLS         PORTB, 6 
+                      00031 #DEFINE         CH_LA                   PORTB, 7
+                      00032 #DEFINE         CH_SI                   PORTA, 1 
+                      00033 #DEFINE         LED                     PORTA, 2
+                      00034 #DEFINE         LED_VM          PORTA, 3
+                      00035 #DEFINE         LED_VD          PORTA, 4
+                      00036 #DEFINE         AF                      PORTA, 6
+                      00037 #DEFINE         CH_INT          PORTB, 0
+                      00038 #DEFINE         CH_CL           PORTA, 7
+                      00039 
+                      00040 
+                      00041 ; ------- Registradores de uso geral  -------
+                      00042 #DEFINE         DESL_LED                BSF             LED
+                      00043 #DEFINE         LIGA_LED                BCF             LED
+MPASM  5.51                         CAIXA.ASM   8-23-2020  20:58:28         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00044 #DEFINE         LIGA_AF         BSF             AF
+                      00045 #DEFINE         DESL_AF         BCF             AF
+                      00046 
+                      00047 ; ------- Bancos de memoria  -------
+                      00048 #DEFINE         BANK0                   BCF             STATUS, RP0                             ; mnemon
+                            ico - banco 0           
+                      00049 #DEFINE         BANK1                   BSF             STATUS, RP0                             ; mnemon
+                            ico - banco 1
+                      00050 
+                      00051 ; ------- Contadores  -------
+  00000020            00052 CONTA           EQU              20H
+                      00053 
+                      00054 ; ------- Variaveis  -------
+                      00055 
+                      00056 
+                      00057 ; ------- Definindo origem  -------
+000000                00058                 ORG                     000H
+000000 6A03           00059                 CLRF                    STATUS
+000002 EF03 F000      00060                         GOTO                    INICIO
+                      00061 
+                      00062 ; ------- Principio do programa  -------
+000006                00063 INICIO:
+000006 8A03           00064                         BANK1                                                                           
+                                             ; Vai para o Banco 1
+000008 0E80           00065                         MOVLW           B'10000000'                                                     
+                                     ; Somente RA0 como saida
+00000A 6F85           00066                         MOVWF           TRISA                               
+                      00067 
+00000C 0E01           00068                 MOVLW           B'00000001'
+00000E 6F86           00069                         MOVWF           TRISB                                                           
+                                     ; Somente RB3 como saida
+000010 9A03           00070                         BANK0                                                                           
+                                             ; Volta para o Banco 0
+                      00071 
+000012 8405           00072                         DESL_LED                                                                        
+                                     ; Desliga o LED
+000014 9C05           00073                 DESL_AF                                                                                 
+                             ; Desliga o Auto Falante
+                      00074 
+                      00075 ; ------- Subrotinas  -------
+                      00076 
+                      00077 ; # Nota Do> C = 261,63Hz -> T = 3,82 mseg | T/2 = 1,911mseg = 1.911 useg #
+000016                00078 TESTA_DO:     
+000016 B206           00079                         BTFSC                   CH_DO                                                   
+                                            ; A Chave do Do esta acionada?
+000018 EF19 F000      00080                         GOTO                    TESTA_RE                                                
+                                    ; 1 - Testa a chave do RE
+00001C 9405           00081                         LIGA_LED                                                                        
+                                            ; 0 - Liga o led
+                      00082 
+00001E                00083 GERA_DO:    
+00001E 8C05           00084                         LIGA_AF                                                                         
+                                            ; Ligar o auto falante
+MPASM  5.51                         CAIXA.ASM   8-23-2020  20:58:28         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+000020 EC7D F000      00085                         CALL                    TEMPO_DO                                                
+                                    ; Tocar a nota pelo tempo determinado do Do
+000024 9C05           00086                         DESL_AF                                                                         
+                                            ; Desligar o auto falante
+000026 EC7D F000      00087                         CALL                    TEMPO_DO                                                
+                                    ; Esperar o tempo da nota
+                      00088 
+00002A A206           00089                         BTFSS                   CH_DO                                                   
+                                            ; A chave continua pressionada?
+00002C EF0F F000      00090                         GOTO                    GERA_DO                                                 
+                                            ; 0 - Gerar a nota novamente
+000030 8405           00091                         DESL_LED                                                                        
+                                            ; 1 - Apagar o led
+                      00092 
+                      00093 
+                      00094 ; # Nota Re> D = 293,66hz -> T = 3.45 mseg -> T/2 = 1,702mseg = 1.702,5useg #
+000032                00095 TESTA_RE:     
+000032 B406           00096                         BTFSC                   CH_RE                                                   
+                                            ; A Chave do Re foi acionada?
+000034 EF27 F000      00097                         GOTO                    TESTA_RES                                               
+                                    ; 1 - Testa a chave do mi
+                      00098         
+000038 9405           00099                         LIGA_LED                                                                        
+                                    ; 0 - Acende led
+                      00100 
+00003A                00101 GERA_RE:    
+00003A 8C05           00102                         LIGA_AF                                                                         
+                                            ; Ligar auto falante
+00003C EC81 F000      00103                         CALL                    TEMPO_RE                                                
+                                    ; Tocar a nota pelo tempo determinado do Re
+000040 9C05           00104                         DESL_AF                                                                         
+                                    ; Desliga o auto falante
+000042 EC81 F000      00105                         CALL                    TEMPO_RE                                                
+                                    ; Esperar o tempo da nota
+                      00106 
+000046 A406           00107                         BTFSS                   CH_RE                                                   
+                                            ; A chave foi solta?
+000048 EF1D F000      00108                         GOTO                    GERA_RE                                                 
+                                            ; 0 - Gerar a nota novamente
+00004C 9405           00109                 LIGA_LED                                                                                
+                                    ; 1 - Liga o led
+                      00110 
+                      00111 
+                      00112 ; # Nota Re#> D# = 311,13 Hz -> T = 3,214 mseg / T/2 = 1,607 mseg = 1.607 useg
+00004E                00113 TESTA_RES:     
+00004E B606           00114                         BTFSC                   CH_RES                                                  
+                                            ; A Chave do Re foi acionada?
+000050 EF35 F000      00115                         GOTO                    TESTA_MI                                                
+                                    ; 1 - Testa a chave do mi
+                      00116         
+000054 9405           00117                         LIGA_LED                                                                        
+                                    ; 0 - Acende led
+                      00118 
+MPASM  5.51                         CAIXA.ASM   8-23-2020  20:58:28         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+000056                00119 GERA_RES:    
+000056 8C05           00120                         LIGA_AF                                                                         
+                                            ; Ligar auto falante
+000058 EC85 F000      00121                         CALL                    TEMPO_RES                                               
+                                    ; Tocar a nota pelo tempo determinado do Re
+00005C 9C05           00122                         DESL_AF                                                                         
+                                    ; Desliga o auto falante
+00005E EC85 F000      00123                         CALL                    TEMPO_RES                                               
+                                    ; Esperar o tempo da nota
+                      00124 
+000062 A606           00125                         BTFSS                   CH_RES                                                  
+                                            ; A chave foi solta?
+000064 EF2B F000      00126                         GOTO                    GERA_RES                                                
+                                            ; 0 - Gerar a nota novamente
+000068 9405           00127                 LIGA_LED
+                      00128 
+                      00129 
+                      00130 ; # Nota Mi> E = 329,63Hz -> T = 3,0337 mseg -> t/2 = 1,516 mseg = 1.516,85 useg
+00006A                00131 TESTA_MI:     
+00006A B806           00132                         BTFSC                   CH_MI                                                   
+                                            ; A Chave do Mi foi pressionada?
+00006C EF43 F000      00133                         GOTO                    TESTA_SOL                                               
+                                    ; 1 - Testa a chave do Fa
+                      00134 
+000070 9405           00135                         LIGA_LED                                                                        
+                                            ; 0 - Liga o led
+                      00136 
+000072                00137 GERA_MI:    
+000072 8C05           00138                  LIGA_AF                                                                                
+                                    ; Liga auto falante
+000074 EC89 F000      00139                         CALL                    TEMPO_MI                                                
+                                    ; Toca a nota pelo tempo do Mi
+000078 9C05           00140                  DESL_AF                                                                                
+                                    ; Desliga auto falante
+00007A EC89 F000      00141                         CALL                    TEMPO_MI                                                
+                                    ; 
+                      00142 
+00007E A806           00143                 BTFSS                   CH_MI                                                           
+                                    ; chave do foi solta?
+000080 EF39 F000      00144                         GOTO                    GERA_MI                
+000084 8405           00145                         DESL_LED                                                                        
+                                            ;apaga o led
+                      00146 
+                      00147 
+                      00148 ; Nota Sol> G = 392Hz -> T =  2,551mseg -> t/2 = 1,2755 mseg = 1.275,5 useg
+000086                00149 TESTA_SOL:    
+000086 BA06           00150                         BTFSC                   CH_SOL                                                  
+                                             ; Chave do re acionada?????
+000088 EF51 F000      00151                         GOTO                    TESTA_SOLS
+                      00152         
+00008C 9405           00153                         LIGA_LED                                                                        
+                                             ; Acende led
+                      00154 
+MPASM  5.51                         CAIXA.ASM   8-23-2020  20:58:28         PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00008E                00155 GERA_SOL:   
+00008E 8C05           00156                         LIGA_AF                                                                         
+                                     ; liga auto falante
+000090 EC8D F000      00157                         CALL                    TEMPO_SOL                  
+000094 9C05           00158                         DESL_AF                                                                         
+                                    ; desliga auto falante
+000096 EC8D F000      00159                 CALL                    TEMPO_SOL
+                      00160 
+00009A AA06           00161                         BTFSS                   CH_SOL                                                  
+                                            ; chave do foi solta?
+00009C EF47 F000      00162                         GOTO                    GERA_SOL                
+0000A0 8405           00163                 DESL_LED                                                                                
+                            ; apaga o led
+                      00164 
+                      00165 
+                      00166 ; Nota SolS>  G# = 415,3 Hz -> T = 2,407 mseg / T/2 = 1,2035 mseg = 1.203,5 useg
+0000A2                00167 TESTA_SOLS:    
+0000A2 BC06           00168                         BTFSC                   CH_SOLS                                                 
+                                             ; Chave do re acionada?????
+0000A4 EF5F F000      00169                         GOTO                    TESTA_LA
+                      00170         
+0000A8 9405           00171                         LIGA_LED                                                                        
+                                             ; Acende led
+                      00172 
+0000AA                00173 GERA_SOLS:   
+0000AA 8C05           00174                         LIGA_AF                                                                         
+                                             ; liga auto falante
+0000AC EC91 F000      00175                         CALL                    TEMPO_SOLS                  
+0000B0 9C05           00176                         DESL_AF                                                                         
+                                    ; desliga auto falante
+0000B2 EC91 F000      00177                 CALL                    TEMPO_SOLS
+                      00178 
+0000B6 AC06           00179                         BTFSS                   CH_SOLS                                                 
+                                            ; chave do foi solta?
+0000B8 EF55 F000      00180                         GOTO                    GERA_SOLS                
+0000BC 8405           00181                 DESL_LED                                                                                
+                                    ; apaga o led
+                      00182 
+                      00183 
+                      00184 ; Nota La> A = 440Hz -> T =  2,273mseg -> t/2 = 1,1365 mseg = 1.136,5 useg
+0000BE                00185 TESTA_LA:     
+0000BE BE06           00186                         BTFSC                   CH_LA                                                   
+                                    ; Chave do re acionada?????
+0000C0 EF6D F000      00187                         GOTO                    TESTA_SI                                
+                      00188                             
+0000C4 9405           00189                         LIGA_LED                                                                        
+                                            ; Acende led
+                      00190 
+0000C6                00191 GERA_LA:    
+0000C6 8C05           00192                         LIGA_AF                                                                         
+                                    ; liga auto falante
+0000C8 EC95 F000      00193                         CALL                    TEMPO_LA                  
+0000CC 9C05           00194                         DESL_AF                                                                         
+MPASM  5.51                         CAIXA.ASM   8-23-2020  20:58:28         PAGE  6
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                                    ; desliga auto falante
+0000CE EC95 F000      00195                 CALL                    TEMPO_LA
+                      00196 
+0000D2 AE06           00197                         BTFSS                   CH_LA                                                   
+                                     ; chave do foi solta?
+0000D4 EF63 F000      00198                         GOTO                    GERA_LA                
+0000D8 8405           00199                 DESL_LED                                                                                
+                                    ; apaga o led
+                      00200 
+                      00201 ; Nota Si> B = 493,88 Hz -> T = 2,0247 mseg / T/2 = 1,0123 mseg = 1.012,35useg
+0000DA                00202 TESTA_SI:     
+0000DA B205           00203                         BTFSC                   CH_SI                                                   
+                                    ; Chave do re acionada?????
+0000DC EF0B F000      00204                         GOTO                    TESTA_DO                                
+                      00205                             
+0000E0 9405           00206                         LIGA_LED                                                                        
+                                            ; Acende led
+                      00207 
+0000E2                00208 GERA_SI:    
+0000E2 8C05           00209                         LIGA_AF                                                                         
+                                    ; liga auto falante
+0000E4 EC99 F000      00210                         CALL                    TEMPO_SI                  
+0000E8 9C05           00211                         DESL_AF                                                                         
+                                    ; desliga auto falante
+0000EA EC99 F000      00212                 CALL                    TEMPO_SI
+                      00213 
+0000EE A205           00214                         BTFSS                   CH_SI                                                   
+                                     ; chave do foi solta?
+0000F0 EF71 F000      00215                         GOTO                    GERA_SI                
+0000F4 8405           00216                 DESL_LED                                                                                
+                                    ; apaga o led
+                      00217 
+0000F6 EF0B F000      00218                         GOTO                    TESTA_DO
+                      00219 
+                      00220 
+                      00221 ; ---- subrotinas
+0000FA                00222 TEMPO_DO:      
+0000FA 0EEE           00223                         MOVLW            .238                                                           
+                                    ; 238 x 8 x 1 useg = 1.911 useg
+0000FC 6E20           00224                         MOVWF           CONTA                                                           
+                                    ; 
+0000FE EF9D F000      00225                         GOTO                    LOOP
+                      00226 
+000102                00227 TEMPO_RE:      
+000102 0ED5           00228                         MOVLW           .213                                                            
+                                    ; 213 x 8 x 1 useg = 1.702,5useg
+000104 6E20           00229                         MOVWF           CONTA                                                           
+                                    ; 
+000106 EF9D F000      00230                         GOTO                    LOOP
+                      00231 
+00010A                00232 TEMPO_RES:
+00010A 0EC9           00233                 MOVLW           .201                                                                    
+                            ; 201 x 8 x 1 useg = 1.607 useg
+MPASM  5.51                         CAIXA.ASM   8-23-2020  20:58:28         PAGE  7
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00010C 6E20           00234                         MOVWF           CONTA                                                           
+                                    ; 
+00010E EF9D F000      00235                         GOTO                    LOOP
+                      00236 
+000112                00237 TEMPO_MI:      
+000112 0EBE           00238                         MOVLW           .190                                                            
+                                    ; 190 x 8 x 1 useg = 1.520 useg
+000114 6E20           00239                         MOVWF           CONTA                                                           
+                                    ;  
+000116 EF9D F000      00240                         GOTO                    LOOP
+                      00241 
+00011A                00242 TEMPO_SOL:     
+00011A 0E9F           00243                         MOVLW           .159                                                            
+                                    ; 159 x 8 x 1 useg = 1.272 useg
+00011C 6E20           00244                         MOVWF           CONTA                                                           
+                            ;  
+00011E EF9D F000      00245                         GOTO                    LOOP
+                      00246 
+000122                00247 TEMPO_SOLS:   
+000122 0E96           00248                 MOVLW           .150                                                                    
+                            ; 150 x 8 x 1 useg = 1.200 useg
+000124 6E20           00249                         MOVWF           CONTA                                                           
+                            ;  
+000126 EF9D F000      00250                         GOTO                    LOOP
+                      00251 
+00012A                00252 TEMPO_LA:      
+00012A 0E8E           00253                         MOVLW           .142                                                            
+                                    ; 142 x 8 x 1 useg = 1.136 useg
+00012C 6E20           00254                         MOVWF           CONTA                                                           
+                            ;  
+00012E EF9D F000      00255                         GOTO                    LOOP
+                      00256 
+000132                00257 TEMPO_SI:
+000132 0E7E           00258                         MOVLW           .126                                                            
+                                    ; 126 x 8 x 1 useg = 1.012,3useg
+000134 6E20           00259                         MOVWF           CONTA                                                           
+                            ;  
+000136 EF9D F000      00260                         GOTO                    LOOP
+                      00261 
+                      00262 
+                      00263 ; ------- Loops  -------
+00013A                00264 LOOP:      
+00013A 0000           00265                         NOP
+00013C 0000           00266                         NOP 
+00013E 0000           00267                         NOP 
+000140 0000           00268                         NOP
+000142 0000           00269                         NOP
+000144 2E20           00270                         DECFSZ          CONTA,   F
+000146 EF9D F000      00271                         GOTO                    LOOP
+                      00272 
+00014A 0012           00273                         RETURN 
+                      00274 
+                      00275 
+MPASM  5.51                         CAIXA.ASM   8-23-2020  20:58:28         PAGE  8
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00276 
+                      00277 
+                      00278                 END
+MPASM  5.51                         CAIXA.ASM   8-23-2020  20:58:28         PAGE  9
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+ADDEN                             00000003
+ADEN                              00000003
+AF                                PORTA, 6
+BANK0                             BCF             STATUS, RP0
+BANK1                             BSF             STATUS, RP0
+BRGH                              00000002
+C                                 00000000
+C1INV                             00000004
+C1OUT                             00000006
+C2INV                             00000005
+C2OUT                             00000007
+CCP1CON                           00000017
+CCP1IE                            00000002
+CCP1IF                            00000002
+CCP1M0                            00000000
+CCP1M1                            00000001
+CCP1M2                            00000002
+CCP1M3                            00000003
+CCP1X                             00000005
+CCP1Y                             00000004
+CCPR1                             00000015
+CCPR1H                            00000016
+CCPR1L                            00000015
+CH_CL                             PORTA, 7
+CH_DO                             PORTB, 1
+CH_INT                            PORTB, 0
+CH_LA                             PORTB, 7
+CH_MI                             PORTB, 4
+CH_RE                             PORTB, 2
+CH_RES                            PORTB, 3
+CH_SI                             PORTA, 1
+CH_SOL                            PORTB, 5
+CH_SOLS                           PORTB, 6
+CIS                               00000003
+CM0                               00000000
+CM1                               00000001
+CM2                               00000002
+CMCON                             0000001F
+CMIE                              00000006
+CMIF                              00000006
+CONTA                             00000020
+CREN                              00000004
+CSRC                              00000007
+DATA_CP_OFF                       00003FFF
+DATA_CP_ON                        00003EFF
+DC                                00000001
+DESL_AF                           BCF             AF
+DESL_LED                          BSF             LED
+EEADR                             0000009B
+EECON1                            0000009C
+EECON2                            0000009D
+EEDATA                            0000009A
+EEIE                              00000007
+MPASM  5.51                         CAIXA.ASM   8-23-2020  20:58:28         PAGE 10
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+EEIF                              00000007
+F                                 00000001
+FERR                              00000002
+FSR                               00000004
+GERA_DO                           0000001E
+GERA_LA                           000000C6
+GERA_MI                           00000072
+GERA_RE                           0000003A
+GERA_RES                          00000056
+GERA_SI                           000000E2
+GERA_SOL                          0000008E
+GERA_SOLS                         000000AA
+GIE                               00000007
+INDF                              00000000
+INICIO                            00000006
+INTCON                            0000000B
+INTE                              00000004
+INTEDG                            00000006
+INTF                              00000001
+IRP                               00000007
+LED                               PORTA, 2
+LED_VD                            PORTA, 4
+LED_VM                            PORTA, 3
+LIGA_AF                           BSF             AF
+LIGA_LED                          BCF             LED
+LOOP                              0000013A
+NOT_BO                            00000000
+NOT_BOD                           00000000
+NOT_BOR                           00000000
+NOT_PD                            00000003
+NOT_POR                           00000001
+NOT_RBPU                          00000007
+NOT_T1SYNC                        00000002
+NOT_TO                            00000004
+OERR                              00000001
+OPTION_REG                        00000081
+OSCF                              00000003
+PCL                               00000002
+PCLATH                            0000000A
+PCON                              0000008E
+PEIE                              00000006
+PIE1                              0000008C
+PIR1                              0000000C
+PORTA                             00000005
+PORTB                             00000006
+PR2                               00000092
+PS0                               00000000
+PS1                               00000001
+PS2                               00000002
+PSA                               00000003
+RA0                               00000000
+RA1                               00000001
+RA2                               00000002
+MPASM  5.51                         CAIXA.ASM   8-23-2020  20:58:28         PAGE 11
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+RA3                               00000003
+RA4                               00000004
+RA5                               00000005
+RA6                               00000006
+RA7                               00000007
+RB0                               00000000
+RB1                               00000001
+RB2                               00000002
+RB3                               00000003
+RB4                               00000004
+RB5                               00000005
+RB6                               00000006
+RB7                               00000007
+RBIE                              00000003
+RBIF                              00000000
+RCIE                              00000005
+RCIF                              00000005
+RCREG                             0000001A
+RCSTA                             00000018
+RD                                00000000
+RP0                               00000005
+RP1                               00000006
+RX9                               00000006
+RX9D                              00000000
+SPBRG                             00000099
+SPEN                              00000007
+SREN                              00000005
+STATUS                            00000003
+SYNC                              00000004
+T0CS                              00000005
+T0IE                              00000005
+T0IF                              00000002
+T0SE                              00000004
+T1CKPS0                           00000004
+T1CKPS1                           00000005
+T1CON                             00000010
+T1OSCEN                           00000003
+T2CKPS0                           00000000
+T2CKPS1                           00000001
+T2CON                             00000012
+TEMPO_DO                          000000FA
+TEMPO_LA                          0000012A
+TEMPO_MI                          00000112
+TEMPO_RE                          00000102
+TEMPO_RES                         0000010A
+TEMPO_SI                          00000132
+TEMPO_SOL                         0000011A
+TEMPO_SOLS                        00000122
+TESTA_DO                          00000016
+TESTA_LA                          000000BE
+TESTA_MI                          0000006A
+TESTA_RE                          00000032
+TESTA_RES                         0000004E
+MPASM  5.51                         CAIXA.ASM   8-23-2020  20:58:28         PAGE 12
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+TESTA_SI                          000000DA
+TESTA_SOL                         00000086
+TESTA_SOLS                        000000A2
+TMR0                              00000001
+TMR0IE                            00000005
+TMR0IF                            00000002
+TMR1                              0000000E
+TMR1CS                            00000001
+TMR1H                             0000000F
+TMR1IE                            00000000
+TMR1IF                            00000000
+TMR1L                             0000000E
+TMR1ON                            00000000
+TMR2                              00000011
+TMR2IE                            00000001
+TMR2IF                            00000001
+TMR2ON                            00000002
+TOUTPS0                           00000003
+TOUTPS1                           00000004
+TOUTPS2                           00000005
+TOUTPS3                           00000006
+TRISA                             00000085
+TRISA0                            00000000
+TRISA1                            00000001
+TRISA2                            00000002
+TRISA3                            00000003
+TRISA4                            00000004
+TRISA5                            00000005
+TRISA6                            00000006
+TRISA7                            00000007
+TRISB                             00000086
+TRISB0                            00000000
+TRISB1                            00000001
+TRISB2                            00000002
+TRISB3                            00000003
+TRISB4                            00000004
+TRISB5                            00000005
+TRISB6                            00000006
+TRISB7                            00000007
+TRMT                              00000001
+TX9                               00000006
+TX9D                              00000000
+TXEN                              00000005
+TXIE                              00000004
+TXIF                              00000004
+TXREG                             00000019
+TXSTA                             00000098
+VR0                               00000000
+VR1                               00000001
+VR2                               00000002
+VR3                               00000003
+VRCON                             0000009F
+VREN                              00000007
+MPASM  5.51                         CAIXA.ASM   8-23-2020  20:58:28         PAGE 13
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+VROE                              00000006
+VRR                               00000005
+W                                 00000000
+WR                                00000001
+WREN                              00000002
+WRERR                             00000003
+Z                                 00000002
+_BODEN_OFF                        00003FBF
+_BODEN_ON                         00003FFF
+_BOREN_OFF                        00003FBF
+_BOREN_ON                         00003FFF
+_CONFIG                           00002007
+_CPD_OFF                          00003FFF
+_CPD_ON                           00003EFF
+_CP_OFF                           00003FFF
+_CP_ON                            00001FFF
+_DEVID1                           00002006
+_ER_OSC_CLKOUT                    00003FFF
+_ER_OSC_NOCLKOUT                  00003FFE
+_EXTCLK_OSC                       00003FEF
+_FOSC_ECIO                        00003FEF
+_FOSC_EXTRCCLK                    00003FFF
+_FOSC_EXTRCIO                     00003FFE
+_FOSC_HS                          00003FEE
+_FOSC_INTOSCCLK                   00003FFD
+_FOSC_INTOSCIO                    00003FFC
+_FOSC_LP                          00003FEC
+_FOSC_XT                          00003FED
+_HS_OSC                           00003FEE
+_IDLOC0                           00002000
+_IDLOC1                           00002001
+_IDLOC2                           00002002
+_IDLOC3                           00002003
+_INTOSC_OSC_CLKOUT                00003FFD
+_INTOSC_OSC_NOCLKOUT              00003FFC
+_INTRC_OSC_CLKOUT                 00003FFD
+_INTRC_OSC_NOCLKOUT               00003FFC
+_LP_OSC                           00003FEC
+_LVP_OFF                          00003F7F
+_LVP_ON                           00003FFF
+_MCLRE_OFF                        00003FDF
+_MCLRE_ON                         00003FFF
+_PWRTE_OFF                        00003FFF
+_PWRTE_ON                         00003FF7
+_RC_OSC_CLKOUT                    00003FFF
+_RC_OSC_NOCLKOUT                  00003FFE
+_WDTE_OFF                         00003FFB
+_WDTE_ON                          00003FFF
+_WDT_OFF                          00003FFB
+_WDT_ON                           00003FFF
+_XT_OSC                           00003FED
+__18F452                          00000001
+MPASM  5.51                         CAIXA.ASM   8-23-2020  20:58:28         PAGE 14
+
+
+MEMORY USAGE MAP ('X' = Used,  '-' = Unused)
+
+
+0000 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0040 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0080 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+00C0 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0100 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0140 : XXXXXXXXXXXX---- ---------------- ---------------- ----------------
+
+All other memory blocks unused.
+
+Program Memory Bytes Used:   332
+Program Memory Bytes Free: 32436
+
+
+Errors   :     0
+Warnings :     0 reported,     0 suppressed
+Messages :     1 reported,     0 suppressed
+
+
