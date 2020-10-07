@@ -1,0 +1,77 @@
+MPLINK 4.49, Linker
+Linker Map File - Created Thu Aug 27 01:02:29 2020
+
+                                 Section Info
+                  Section       Type    Address   Location Size(Bytes)
+                ---------  ---------  ---------  ---------  ---------
+                   .org_0       code   0x000000    program   0x000000
+                   .org_1       code   0x000000    program   0x000004
+                   .org_2       code   0x000004    program   0x00019a
+
+
+
+                              Program Memory Usage 
+                               Start         End      
+                           ---------   ---------      
+                            0x000000    0x00019d      
+            414 out of 33048 program addresses used, program memory utilization is 1%
+
+
+
+                              Symbols - Sorted by Name
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                FUR_ELISE   0x000044    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                  GERA_DO   0x0000dc    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                  GERA_LA   0x000130    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                  GERA_MI   0x000106    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                  GERA_RE   0x0000ea    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                 GERA_RES   0x0000f8    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                  GERA_SI   0x00013e    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                 GERA_SOL   0x000114    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                GERA_SOLS   0x000122    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                   INICIO   0x000024    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                  INT_TMR   0x000022    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                     LOOP   0x00018c    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                  SAI_INT   0x000018    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                   SUSANA   0x000090    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                 TEMPO_DO   0x00014c    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                 TEMPO_LA   0x00017c    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                 TEMPO_MI   0x000164    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                 TEMPO_RE   0x000154    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                TEMPO_RES   0x00015c    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                 TEMPO_SI   0x000184    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                TEMPO_SOL   0x00016c    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+               TEMPO_SOLS   0x000174    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+              TESTA_CHAVE   0x00003a    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+
+
+
+                              Symbols - Sorted by Address
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                  SAI_INT   0x000018    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                  INT_TMR   0x000022    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                   INICIO   0x000024    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+              TESTA_CHAVE   0x00003a    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                FUR_ELISE   0x000044    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                   SUSANA   0x000090    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                  GERA_DO   0x0000dc    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                  GERA_RE   0x0000ea    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                 GERA_RES   0x0000f8    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                  GERA_MI   0x000106    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                 GERA_SOL   0x000114    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                GERA_SOLS   0x000122    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                  GERA_LA   0x000130    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                  GERA_SI   0x00013e    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                 TEMPO_DO   0x00014c    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                 TEMPO_RE   0x000154    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                TEMPO_RES   0x00015c    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                 TEMPO_MI   0x000164    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                TEMPO_SOL   0x00016c    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+               TEMPO_SOLS   0x000174    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                 TEMPO_LA   0x00017c    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                 TEMPO_SI   0x000184    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+                     LOOP   0x00018c    program     static C:\Users\stefanini.STFBSBC044667-L\Pictures\AssemblyAMM\Caixinha musical\caixa.asm
+
+

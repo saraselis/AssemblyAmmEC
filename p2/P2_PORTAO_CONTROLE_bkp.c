@@ -1,6 +1,4 @@
-; !!Dados da questao
-;  15mseg e 1,2s
-; 0 -> saida - 1 -> entrada
+; Dados da questao
 
 
 ; -------  Processador utilizado -------
@@ -8,14 +6,14 @@
 
 
 ; ------- Cristal e CM  -------
-; Cristal => 6,4 MHz
-; CM = 4 / 6,4MHz = 6,25x10-7 useg -> 0,625 useg
+; Cristal => 3,2 MHz
+; CM = 4 / 3,2MHz = 1,25 useg
 
 
 ; ------- Inputs e Outputs  -------
 #DEFINE		 LED         	PORTA, 0   							 ; saida
 #DEFINE     	SINAL1      PORTA, 1
-#DEFINE     	SINAL2     PORTA, 2
+#DEFINE     	SINAL2      PORTA, 2
 #DEFINE     	CH_PA       	PORTB, 1
 #DEFINE     	CH_PF       	PORTB, 2
 #DEFINE     	RL1         	PORTB, 3   							 ; saida
@@ -58,7 +56,7 @@ INICIO:
 
 ; ------- Sub-rotinas  -------
 VOLTA:      
-	   	DESL_LED
+	   	BSF         		LED 
             	BCF         		RL1
             	BCF         		RL2
             	BCF         		RL3
@@ -68,6 +66,8 @@ VOLTA:
 TST_S1:
             	BTFSS       		SINAL1
             	GOTO        		TST_S2
+
+
            	BSF         		RL1 
             	CALL        		LP_2SEG
             	BCF         		RL1
@@ -76,62 +76,58 @@ TST_S1:
 TST_S2:
             	BTFSS       		SINAL2
             	GOTO        		TST_S1
+
             	BTFSC       		CH_PA                      					 ; portao aberto?
             	GOTO        		ABRIR
 
-		; # fechar
-            	BSF         		RL2                        					 ; aciona rele q fecha
-            	LIGA_LED 			                       					 ; liga led
 
+; fechar
+            	BSF         		RL2                        					 ; aciona rele q fecha
+            	BCF         		LED                        					 ; liga led
 ESPERA1:
-            	BTFSS       		CH_PF                       					 ; portao totalmente fechado?
+            	btfss       		CH_PF                       					 ; portao totalmente fechado?
             	GOTO        		VOLTA
 
             	BTFSC       		SINAL2
             	GOTO        		VOLTA
+
             	GOTO        		ESPERA1
 
 
 ABRIR:       
             	BSF         		RL3                        					 ; aciona rele q fecha
-            	LIGA_LED			                        					 ; liga led
-		
-
+            	BCF         		LED                         					 ; liga led
 ESPERA2:
             	BTFSS       		CH_PA                      					 ; portao totalmente fechado?
             	GOTO        		VOLTA
+
             	BTFSC       		SINAL2
             	GOTO        		VOLTA
-            	GOTO        		ESPERA2
 
+            	GOTO        		ESPERA2
 
 
 ; ------- Loops -------
 
 LP_2SEG:
-            	MOVLW       	.6                    						 ; 6 x  200mseg = 1,2s
+            	MOVLW       	.10                    						 ; 10 x  200mseg = 2s
             	MOVWF       	CONTA3
 
 LOOP1:      
-            	CALL        		LP_200MS               					
+            	CALL        		LP_200MS               					 ; 200 x 1 mseg = 200 mseg
             	DECFSZ      	CONTA3, F
             	GOTO        		LOOP1
 
 LP_200MS:
-
-            	MOVLW       	.200                   						 ; 200 x 1 mseg = 200 mseg
+            	MOVLW       	.200                   						 ; 4 x 200 x 1,25u = 1mseg
             	MOVWF     	CONTA2
 
 LP_1MS:   
-		
             	MOVLW       	.200
             	MOVWF       	CONTA1
 
-LOOP:       	
-		NOP											 ; 7 x ? x 0,625useg = 1mseg
-		NOP											 ; x = 229
+LOOP:       
             	NOP
-		NOP
             	DECFSZ      	CONTA1, F
             	GOTO        		LOOP
 
